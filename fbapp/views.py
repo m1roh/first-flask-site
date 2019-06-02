@@ -1,9 +1,12 @@
 #! /usr/bin/env python
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request
 
 app = Flask(__name__)
 
 app.config.from_object('config')
+
+
+from .utils import find_content
 
 description = """
         Toi, tu sais comment utiliser la console ! Jamais à court d'idées pour
@@ -24,10 +27,21 @@ def index():
 
 @app.route('/result/')
 def result():
-    return render_template('result.html',
-                           user_name='Tom',
-                           user_image=url_for('static', filename='tmp/cover_111823112767411.jpg'),
-                           description=description)
+    try:
+        gender = request.args.get('gender')
+        user_name = request.args.get('first_name')
+        uid = request.args.get('id')
+        profile_pic = 'http://graph.facebook.com/' + uid + '/picture?type=large'
+
+        return render_template('result.html',
+                               user_name=user_name,
+                               user_image=profile_pic,
+                               description=find_content(gender))
+    except KeyError:
+        return render_template('result.html',
+                               user_name=user_name,
+                               user_image=profile_pic,
+                               description=find_content('other'))
 
 
 if __name__ == "__main__":
